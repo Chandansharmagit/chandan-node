@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/sign.css">
+  <link rel="stylesheet" href="/css/style.css">
+  <title>Document</title>
+</head>
+
+<body>
+
+  <nav class="main_sharma">
+    <div class="logo">
+      <img src="/images/chandan.JPG" alt="Logo Image">
+    </div>
+    <div class="hamburger">
+      <div class="line1"></div>
+      <div class="line2"></div>
+      <div class="line3"></div>
+    </div>
+    <ul class="nav-links">
+      <li><a href="/index">Home</a></li>
+      <li><a href="#">Solutions</a></li>
+      <li><a href="#">Products</a></li>
+      <li><a href="#">Services</a></li>
+      <li><a href="#">Contact Us</a></li>
+      <li><a href="#">Contact Us</a></li>
+
+      <a href="/sign">
+        <li><button class="login-button">Already have an account</button></li>
+      </a>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="card">
+      <div class="card_title">
+        <h1>Create Account</h1>
+        <span>Already have an account? <a href="/sign">Sign In</a></span>
+      </div>
+      <div class="form">
+        <form action="/login" method="post">
+          <input type="text" name="firstname" id="username" placeholder="firstname" />
+          <input type="text" name="lastname" id="username" placeholder="lastname" />
+          <input type="phone" name="phone" id="username" placeholder="phone" />
+          <input type="text" name="address" id="username" placeholder="address" />
+
+          <input type="email" name="email" placeholder="Email" id="email" />
+          <input type="password" name="password" placeholder="Password" id="password" />
+          <input type="password" name="confirmpassword" placeholder="confirmPassword" id="password" />
+          <button type="onsubmit">sign up</button>
+        </form>
+      </div>
+      <div class="card_terms">
+        <input type="checkbox" name="" id="terms"> <span>I have read and agree to the <a href="">Terms of
+            Service</a></span>
+      </div>
+    </div>
+  </div>
+
+
+  <script src="/js/sign.js"></script>
+  <script src="/js/index.js"></script>
+</body>
+
+</html>
