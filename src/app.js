@@ -12,13 +12,22 @@ const bodyParser = require('body-parser');
 const randomstring = require('randomstring')
 const bcrypt = require('bcrypt')
 
+//const mongoose = require('mongoose');
 
-const hbs = require('hbs');
+
+//const DB = 'mongodb+srv://chandansharma575757:HYt3VxJHB8jsPf51@cluster0.hied47d.mongodb.net/chandan_user_database?retryWrites=true&w=majority';
+// mongoose.connect(DB).then(() => {
+//     console.log(`connection succesfull`);
+// }).catch((error) => {
+//     console.log(error)
+// });
+ const hbs = require('hbs');
 
 
-require("./database/database")
+ require("./database/database")
 var Chandan_user = require("./database/models/model");
 const { checkPrime, secureHeapUsed } = require('crypto');
+const { error } = require('console');
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
