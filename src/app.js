@@ -2,6 +2,7 @@ const express = require('express');
 const path = require("path");
 const app = express();
 
+const jwt = require('jsonwebtoken');
 const cors = require('cors');
 // const jwt = require('jsonwebtoken');
 const nodemailer = require("nodemailer");
@@ -12,22 +13,16 @@ const bodyParser = require('body-parser');
 const randomstring = require('randomstring')
 const bcrypt = require('bcrypt')
 
-//const mongoose = require('mongoose');
+
+const hbs = require('hbs');
 
 
-//const DB = 'mongodb+srv://chandansharma575757:HYt3VxJHB8jsPf51@cluster0.hied47d.mongodb.net/chandan_user_database?retryWrites=true&w=majority';
-// mongoose.connect(DB).then(() => {
-//     console.log(`connection succesfull`);
-// }).catch((error) => {
-//     console.log(error)
-// });
- const hbs = require('hbs');
-
-
- require("./database/database")
+require("./database/database")
 var Chandan_user = require("./database/models/model");
 const { checkPrime, secureHeapUsed } = require('crypto');
 const { error } = require('console');
+const { AsyncLocalStorage } = require('async_hooks');
+const { link } = require('fs');
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -41,21 +36,6 @@ const port = process.env.PORT || 3001;
 app.use(cors({
     origin: ["http://localhost:3001/index"]
 }))
-
-//creating the middleawaer for the photo uploading
-
-// const multer = require('multer');
-// const grids = require('gridfs-stream');
-
-// const upload = multer({
-//     storage: multer.memoryStorage()
-// });
-// const uploadmiddlewear  = upload.single('file');
-
-
-
-
-
 
 
 
@@ -75,14 +55,6 @@ app.use(express.static(staticPath))
 app.get('/index', (req, res) => {
     res.render('index');
 })
-
-//update the password
-//app.get('/update-password',Chandan_user.update_password)
-//app.post('/reset-password',Chandan_user.reset_password);
-
-// app.post('/forgot_password',(req,res)=>{
-//     res.send(Chandan_user.forgot_password)
-// });
 
 
 app.get('/sign', (req, res) => {
@@ -120,25 +92,6 @@ var email_sender = async (firstname, lastname, email) => {
         console.log(error)
     }
 }
-
-
-
-
-
-//send verification email to the user
-
-
-// Create a random OTP
-
-
-// Initialize Nodemailer with your email service details
-
-
-// Send the OTP to the user's email
-
-
-// Set up a simple API endpoint to send the OTP to the user's email
-
 
 
 //verify email 
@@ -248,7 +201,7 @@ app.get('/forgot-password', async (req, res) => {
     } catch (error) {
         console.log(error)
     }
-   
+
 })
 
 //sending forgot password to the user
@@ -322,17 +275,70 @@ app.post('/forgot-password', async (req, res) => {
         if (password === confirmpassword) {
             const user_data = await Chandan_user.findByIdAndUpdate({ _id: user_id }, { $set: { confirmpassword: confirmpassword, password: password, token: '' } }, { new: true })
             res.send("<h1><i>your password has been reset</i></h1>");
-        }else{
+        } else {
             res.send("your confirmpassword doesnot match to password")
         }
+    
 
 
     } catch (error) {
         console.log(error)
     }
-   
+
 })
 
+
+// send us massage form
+app.get('/send_us_massage', (req, res) => {
+    res.render('send_us_massage')
+})
+
+//creating the post method to send the email to the user
+
+app.post('/send_us_massage', async (req, res) => {
+    try {
+
+        firstname = req.body.firstname,
+            email = req.body.email,
+            phone = req.body.phone,
+            linkss = req.body.linkss,
+            massage = req.body.massage
+
+        sendingemail(req.body.firstname,req.body.email,req.body.phone,req.body.linkss,req.body.massage)
+
+        res.send("<h1><i>massage has been succesfully sent </i></h1>")
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+
+
+//sending the realtime email by the user to the owner
+
+const sendingemail = async(firstname, email, phone, linkss, massage) => {
+    const sending_email_transporter = nodemailer.createTransport({
+        service :'gmail',
+        auth: {
+            user: 'utamsharma57@gmail.com',
+            pass: 'mppe uspm dfnl nekk',
+        }
+    }) 
+    const details_of_the_user = {
+        from: email,
+        to: "utamsharma57@gmail.com",
+        subject : "Chandan sharma",
+        html: `<h3><i> name : ${firstname} <br><hr> email : ${email} <br><hr> phone : ${phone} <hr><br> links of the website : ${linkss} <br><hr> massage : ${massage} `
+    }
+
+    sending_email_transporter.sendMail(details_of_the_user,function(error,info){
+        if(error){
+            console.log(error)
+        }else{
+            console.log(`massage has been succesfully sent...to : ${email}`)
+        }
+    })
+}
 
 
 
@@ -342,6 +348,26 @@ app.get('/login_error_page', (req, res) => {
 })
 
 
+
+
+
+
+
+
+
+// user authetication 
+
+const createToken = async() => {
+  const token_value = await  jwt.sign({_id:"654159122777c435ec711600"},"thenameischandansharmaclassnepalseconary",{
+    expiresIn:"2 seconds"
+  })
+  console.log(token_value);
+
+  const userVer =await jwt.verify(token_value,"thenameischandansharmaclassnepalseconary")
+  console.log(userVer);
+}
+
+createToken()
 
 
 app.listen(port, '127.0.0.1', () => {

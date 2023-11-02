@@ -8,4 +8,4 @@ mongoose.connect( 'mongodb+srv://chandansharma575757:HYt3VxJHB8jsPf51@cluster0.h
     console.log("database has connected successful")
 }).catch((error) => {
     console.log(error + "failed to connect database")
-})
+})   

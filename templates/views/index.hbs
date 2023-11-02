@@ -31,7 +31,7 @@
             <li><a href="#">Products</a></li>
             <li><a href="#">Solutions</a></li>
             <li><a href="#">chandan</a></li>
-           
+
 
             <a href="/login">
                 <li><button class="login-button">Login</button></li>
@@ -242,6 +242,45 @@
         </div>
 
     </div>
+
+
+
+    {{!-- send us massage box --}}
+   
+
+
+ <div class=".man_body1">
+        <div class="hero_container">
+            <form action="/send_us_massage"id="contact" method="post">
+                <h3>Send us massage</h3>
+                <h4>Contact us </h4>
+                <fieldset>
+                    <input placeholder="Your name" name="firstname" type="text" tabindex="1" required autofocus>
+                </fieldset>
+                <fieldset>
+                    <input placeholder="Your Email Address" name="email" type="email" tabindex="2" required>
+                </fieldset>
+                <fieldset>
+                    <input placeholder="Your Phone Number (optional)" name="phone" type="tel" tabindex="3" required>
+                </fieldset>
+                <fieldset>
+                    <input placeholder="Your Web Site (optional)" type="url" name="linkss" tabindex="4" required>
+                </fieldset>
+                <fieldset>
+                    <textarea placeholder="Type your message here...." name="massage" tabindex="5" required></textarea>
+                </fieldset>
+                <fieldset>
+                    <button name="onsubmit" type="submit" id="contact-submit" data-submit="...Sending">Submit</button>
+                    
+                </fieldset>
+
+            </form>
+        </div>
+
+
+    </div>
+
+
     <script src="/js/index.js"></script>
     <script src="/js/animated.js"></script>
 
