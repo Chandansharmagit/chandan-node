@@ -1,5 +1,6 @@
 const validator = require('validator');
 const mongoose = require('mongoose');
+const jwt = require("jsonwebtoken")
 
 var sign_up = new mongoose.Schema({
     firstname: {
@@ -45,12 +46,33 @@ var sign_up = new mongoose.Schema({
     },
     token: {
         type: String,
-        default: ''
-    }
+        default: '',
+    },
+    tokens: [{
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 
 })
+//generating
+sign_up.methods.generateAuthToken = async function () {
+    try {
+        console.log(this._id)
+        const token = jwt.sign({ _id: this._id.toString() },"mynameischandansharmaclassnepalsecondaryschool");
+        this.tokens = this.tokens.concat({ token })
 
+        await this.save();
 
+        return token;
+
+     } catch (error) {
+
+        res.send("the error part " + error);
+        console.log("the error part " + error);
+    }
+}
 
 //now the creating the playlist 
 

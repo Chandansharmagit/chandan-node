@@ -1,17 +1,20 @@
+require('dotenv').config();
+
 const express = require('express');
 const path = require("path");
 const app = express();
 
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
-// const jwt = require('jsonwebtoken');
+
 const nodemailer = require("nodemailer");
-//const user_id = querystring.parse(req.url).user_id;
-//req.res.locals.user_id = user_id;
-const bodyParser = require('body-parser');
-// const otpGenerator = require('otp-generator');
+
+const cookieParser = require('cookie-parser');
+
 const randomstring = require('randomstring')
 const bcrypt = require('bcrypt')
+ 
+const auth = require('../src/middlewear/auth');
 
 
 const hbs = require('hbs');
@@ -45,6 +48,10 @@ app.use(cors({
 var staticPath = path.join(__dirname, "../public");
 var partilas_path = path.join(__dirname, "../templates/views")
 
+app.use(cookieParser());
+
+
+
 //using middleware
 app.set("view engine", "hbs");
 app.set("views", partilas_path);
@@ -55,6 +62,34 @@ app.use(express.static(staticPath))
 app.get('/index', (req, res) => {
     res.render('index');
 })
+
+
+
+app.get('/secret',auth,(req,res) => {
+   // console.log(`this is the awsome part ${req.cookies.jwt}`)
+    res.render('secret')
+})
+
+app.get('/log_out',auth,async(req,res) => {
+    try{
+        console.log(req.user);
+
+        req.user.tokens = req.user.tokens.filter((currElemet) => {
+            return currElemet.token !== req.token;
+        })
+
+
+
+        res.clearCookie("jwt");
+        console.log("logout succesfull...")
+        await req.user.save();
+        res.render("index");
+
+    }catch(error){
+        res.status(500).send(error)
+    }
+})
+
 
 
 app.get('/sign', (req, res) => {
@@ -114,6 +149,16 @@ app.post('/sign', async (req, res) => {
         var password_checking = await bcrypt.compare(password, email_checking.password);
 
 
+
+        const token = await email_checking.generateAuthToken();
+        console.log("the token part is : " + token);
+
+
+        res.cookie("jwt", token, {
+            expires: new Date(Date.now() + 600000),
+            httpOnly: true
+        });
+
         if (email_checking.password === password) {
             res.status(200).render('index')
         } else {
@@ -161,6 +206,28 @@ app.post('/login', async (req, res) => {
                 phone: req.body.phone
 
             })
+            const token = await lamborghini.generateAuthToken();
+            console.log("the token part is : " + token)
+
+            res.cookie("jwt", token, {
+                expires: new Date(Date.now() + 600000),
+                httpOnly: true
+            });
+
+            console.log(`this is the token part ${req.cookies.jwt}`)
+
+
+            const registration = await lamborghini.save();
+            console.log("the token part " + registration)
+
+
+
+
+
+
+
+
+
             var saving_data = await lamborghini.save();
             res.status(200).render('index');
             console.log(lamborghini)
@@ -278,7 +345,7 @@ app.post('/forgot-password', async (req, res) => {
         } else {
             res.send("your confirmpassword doesnot match to password")
         }
-    
+
 
 
     } catch (error) {
@@ -304,7 +371,7 @@ app.post('/send_us_massage', async (req, res) => {
             linkss = req.body.linkss,
             massage = req.body.massage
 
-        sendingemail(req.body.firstname,req.body.email,req.body.phone,req.body.linkss,req.body.massage)
+        sendingemail(req.body.firstname, req.body.email, req.body.phone, req.body.linkss, req.body.massage)
 
         res.send("<h1><i>massage has been succesfully sent </i></h1>")
     } catch (error) {
@@ -316,25 +383,25 @@ app.post('/send_us_massage', async (req, res) => {
 
 //sending the realtime email by the user to the owner
 
-const sendingemail = async(firstname, email, phone, linkss, massage) => {
+const sendingemail = async (firstname, email, phone, linkss, massage) => {
     const sending_email_transporter = nodemailer.createTransport({
-        service :'gmail',
+        service: 'gmail',
         auth: {
             user: 'utamsharma57@gmail.com',
             pass: 'mppe uspm dfnl nekk',
         }
-    }) 
+    })
     const details_of_the_user = {
         from: email,
         to: "utamsharma57@gmail.com",
-        subject : "Chandan sharma",
+        subject: "Chandan sharma",
         html: `<h3><i> name : ${firstname} <br><hr> email : ${email} <br><hr> phone : ${phone} <hr><br> links of the website : ${linkss} <br><hr> massage : ${massage} `
     }
 
-    sending_email_transporter.sendMail(details_of_the_user,function(error,info){
-        if(error){
+    sending_email_transporter.sendMail(details_of_the_user, function (error, info) {
+        if (error) {
             console.log(error)
-        }else{
+        } else {
             console.log(`massage has been succesfully sent...to : ${email}`)
         }
     })
@@ -357,17 +424,17 @@ app.get('/login_error_page', (req, res) => {
 
 // user authetication 
 
-const createToken = async() => {
-  const token_value = await  jwt.sign({_id:"654159122777c435ec711600"},"thenameischandansharmaclassnepalseconary",{
-    expiresIn:"2 seconds"
-  })
-  console.log(token_value);
+// const createToken = async() => {
+//   const token_value = await  jwt.sign({_id:"654159122777c435ec711600"},"thenameischandansharmaclassnepalseconary",{
+//     expiresIn:"2 seconds"
+//   })
+//   console.log(token_value);
 
-  const userVer =await jwt.verify(token_value,"thenameischandansharmaclassnepalseconary")
-  console.log(userVer);
-}
+//   const userVer =await jwt.verify(token_value,"thenameischandansharmaclassnepalseconary")
+//   console.log(userVer);
+// }
 
-createToken()
+// createToken()
 
 
 app.listen(port, '127.0.0.1', () => {
