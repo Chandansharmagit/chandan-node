@@ -13,11 +13,20 @@ const cookieParser = require('cookie-parser');
 
 const randomstring = require('randomstring')
 const bcrypt = require('bcrypt')
- 
+
 const auth = require('../src/middlewear/auth');
 
 
 const hbs = require('hbs');
+
+
+//connecting with the mysql 
+
+const mysql = require('mysql');
+//exporting the mqsql databases
+var connec = require('./database/models/mysql')
+
+
 
 
 require("./database/database")
@@ -26,18 +35,25 @@ const { checkPrime, secureHeapUsed } = require('crypto');
 const { error } = require('console');
 const { AsyncLocalStorage } = require('async_hooks');
 const { link } = require('fs');
+const { userInfo } = require('os');
+const { connections, trusted } = require('mongoose');
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 
-const port = process.env.PORT || 3001;
+
+
+//showing the looges in username navigation bar
+
+
+const port = process.env.PORT || 3000;
 
 
 
 //middlewear for the uploading file in the github
 
 app.use(cors({
-    origin: ["http://localhost:3001/index"]
+    origin: ["http://localhost:3000/index"]
 }))
 
 
@@ -64,19 +80,64 @@ app.get('/index', (req, res) => {
 })
 
 
+app.get('/mysql', (req, res) => {
+    res.render('mysql')
+})
 
-app.get('/secret',auth,(req,res) => {
-   // console.log(`this is the awsome part ${req.cookies.jwt}`)
+app.post('/mysql', async (req, res) => {
+    var name = req.body.name;
+    var email = req.body.email;
+    var phone = req.body.phone;
+
+
+
+    const insertUserQuery = 'INSERT INTO chandanfamilydetails(name,email,phone) VALUES("' + name + '","' + email + '","' + phone + '")'
+
+    connec.query(insertUserQuery, [name, email, phone], (err, results) => {
+        if (err) {
+            console.error('Error inserting user: ', err);
+        } else {
+            res.send(" registerd succesfull...");
+        }
+
+        // Close the database connection
+        connec.end();
+    });
+
+
+})
+
+app.get('/naming', function (req, res) {
+    var sqll = "select * from chandan_userss";
+
+    connec.query(sqll, function (error, result) {
+        if (error) {
+            console.error('Error executing SQL query: ' + error.message);
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        res.render("naming", { naming: result });
+    });
+});
+
+
+
+app.get('/secret', auth, (req, res) => {
+    // console.log(`this is the awsome part ${req.cookies.jwt}`)
     res.render('secret')
 })
 
-app.get('/log_out',auth,async(req,res) => {
-    try{
+app.get('/log_out', auth, async (req, res) => {
+    try {
         console.log(req.user);
 
-        req.user.tokens = req.user.tokens.filter((currElemet) => {
-            return currElemet.token !== req.token;
-        })
+        //for single logout from single devices
+        // req.user.tokens = req.user.tokens.filter((currElemet) => {
+        //     return currElemet.token !== req.token;
+        // })
+
+        //logout from all devices
+        req.user.tokens = [];
 
 
 
@@ -85,7 +146,7 @@ app.get('/log_out',auth,async(req,res) => {
         await req.user.save();
         res.render("index");
 
-    }catch(error){
+    } catch (error) {
         res.status(500).send(error)
     }
 })
@@ -95,6 +156,13 @@ app.get('/log_out',auth,async(req,res) => {
 app.get('/sign', (req, res) => {
     res.render('sign')
 })
+
+
+//for whowng the name of the user who has login succesfully in the website of chadnan
+
+
+
+
 
 //for sending email for the verification of the user
 
@@ -161,6 +229,8 @@ app.post('/sign', async (req, res) => {
 
         if (email_checking.password === password) {
             res.status(200).render('index')
+
+
         } else {
             res.send('please check your password')
         }
@@ -173,7 +243,13 @@ app.post('/sign', async (req, res) => {
         res.status(400).send("please check your email and try again")
         console.log(error)
     }
+
+    var login_user = async (firstname, lastname) => {
+
+    }
 })
+
+
 
 app.get('/login', (req, res) => {
     res.render('login');
@@ -231,6 +307,7 @@ app.post('/login', async (req, res) => {
             var saving_data = await lamborghini.save();
             res.status(200).render('index');
             console.log(lamborghini)
+            login_user(req.body.firstname, req.body.lastname)
             //sendResetpassword(req.body.firstname, req.body.lastname, req.body.email)
             if (saving_data) {
                 email_sender(req.body.firstname, req.body.lastname, req.body.email);
@@ -286,7 +363,7 @@ const sendResetpassword = async (firstname, lastname, email, token) => {
             from: 'utamsharma57@gmail.com',
             to: email,
             subject: 'for reset password',
-            html: '<h1><i>hii' + " " + firstname + ' ' + lastname + ' please copy the link <a href="http://127.0.0.1:3001/forgot-password?token=' + token + '">click here </a>and reset your password</i></h1>'
+            html: '<h1><i>hii' + " " + firstname + ' ' + lastname + ' please copy the link <a href="http://127.0.0.1:3000/forgot-password?token=' + token + '">click here </a>and reset your password</i></h1>'
         }
 
         transporters.sendMail(details_of_ressetpassword, function (error, info) {
@@ -422,19 +499,6 @@ app.get('/login_error_page', (req, res) => {
 
 
 
-// user authetication 
-
-// const createToken = async() => {
-//   const token_value = await  jwt.sign({_id:"654159122777c435ec711600"},"thenameischandansharmaclassnepalseconary",{
-//     expiresIn:"2 seconds"
-//   })
-//   console.log(token_value);
-
-//   const userVer =await jwt.verify(token_value,"thenameischandansharmaclassnepalseconary")
-//   console.log(userVer);
-// }
-
-// createToken()
 
 
 app.listen(port, '127.0.0.1', () => {

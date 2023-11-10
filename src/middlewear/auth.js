@@ -4,6 +4,7 @@ const Chandan_user = require("../database/models/model");
 
 const auth = async (req,res,next) => {
     try{
+        
         const token = req.cookies.jwt;
         const verifyuser = jwt.verify(token,"mynameischandansharmaclassnepalsecondaryschool");
         console.log(verifyuser);
@@ -18,7 +19,9 @@ const auth = async (req,res,next) => {
 
 
     }catch(error){
-        res.status(404).send(error)
+        
+        res.status(404).send("please login at first to get the secret page")
+        
     }
 }
 
