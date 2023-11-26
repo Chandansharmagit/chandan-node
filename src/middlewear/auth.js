@@ -1,27 +1,31 @@
 const jwt = require("jsonwebtoken");
 
 const Chandan_user = require("../database/models/model");
+const { changeUser } = require("../database/models/mysql");
 
-const auth = async (req,res,next) => {
-    try{
-        
+const auth = async (req, res, next) => {
+    try {
+        //requesting token with cookies 
         const token = req.cookies.jwt;
-        const verifyuser = jwt.verify(token,"mynameischandansharmaclassnepalsecondaryschool");
-        console.log(verifyuser);
+        //varifying the token 
+        const verification = jwt.verify(token, "thenameischanansharmaclassnepalsecondaryschoolthename");
+        //consoling the verification
+       // console.log(verification);
 
-        const username = await Chandan_user.findOne({_id:verifyuser._id});
+        //matching the user id with verification 
+        const username = await Chandan_user.findOne({ _id: verification._id });
+        //consoling the username in the console 
+        //console.log(username);
 
-
-        console.log(username);
+        //now requesting token from the user
         req.token = token;
         req.user = username;
         next();
 
+    } catch (error) {
 
-    }catch(error){
-        
-        res.status(404).send("please login at first to get the secret page")
-        
+        res.status(404).render('loginatfirst')
+
     }
 }
 

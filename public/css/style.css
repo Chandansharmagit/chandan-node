@@ -8,7 +8,8 @@
 }
 
 body {
-   background-image: url("/images/bokeh-lights-effect-dark-background_52683-33179.avif");
+    background-color: black;
+   /* background-image: url("/images/bokeh-lights-effect-dark-background_52683-33179.avif"); */
 }
 
 /* body {

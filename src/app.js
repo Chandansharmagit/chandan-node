@@ -4,6 +4,7 @@ const express = require('express');
 const path = require("path");
 const app = express();
 
+
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 
@@ -17,7 +18,20 @@ const bcrypt = require('bcrypt')
 const auth = require('../src/middlewear/auth');
 
 
+
 const hbs = require('hbs');
+// const passport = require('passport')
+// const LocalStrategy = require('passport-local').Strategy;
+// const session = require('express-session');
+// Use Express session middleware
+
+//const sessions = require('../src/middlewear/sessions')
+// app.use(session({
+//     secret: 'thenameischandansharmaclassnepalmdoellsecondaryschool', // Keep this secret secure
+//     resave: false, // Do not resave session if unchanged
+//     saveUninitialized: true, // Save new sessions even if empty
+//     // Use the MongoDB session store
+// }));
 
 
 //connecting with the mysql 
@@ -26,6 +40,11 @@ const mysql = require('mysql');
 //exporting the mqsql databases
 var connec = require('./database/models/mysql')
 
+
+//initializing the passport for the user authentication 
+// Use passport middleware
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 
 
@@ -84,6 +103,67 @@ app.get('/mysql', (req, res) => {
     res.render('mysql')
 })
 
+app.get('/loginatfirst', (req, res) => {
+    res.render('loginatfirst')
+})
+
+// Replace this with your actual user authentication logic
+
+
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+// showing the user information afer user sucessful login the website
+
+app.get('/welcome', async (req, res) => {
+
+    const userdata = await Chandan_user.findById({ _id: req.session.user })
+    try {
+        if (userdata) {
+            res.render('welcome', { user: userdata })
+        } else {
+            res.send("plese check your data")
+        }
+
+
+    } catch (error) {
+        console.log(error)
+    }
+
+})
+
+// app.get('/welcome', async (req, res) => {
+//     try {
+//         const user_id = req.session.user_id;
+
+//         if (!user_id) {
+//             throw Error('User ID is not defined')
+//         }
+
+//         if (!mongoose.Types.ObjectId.isValid(user_id)) {
+//             throw new Error('Invalid user ID');
+//         }
+
+//         const userdata = await Chandan_user.findById(user_id);
+
+//         if (!userdata) {
+//             throw new Error('User record not found');
+//         }
+
+//         res.render('welcome', { user: userdata });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).send('An error occurred');
+//     }
+// });
+
+
+
+
+
+
+//inserting data into the mysql
 app.post('/mysql', async (req, res) => {
     var name = req.body.name;
     var email = req.body.email;
@@ -129,7 +209,7 @@ app.get('/secret', auth, (req, res) => {
 
 app.get('/log_out', auth, async (req, res) => {
     try {
-        console.log(req.user);
+        // console.log(req.user);
 
         //for single logout from single devices
         // req.user.tokens = req.user.tokens.filter((currElemet) => {
@@ -227,11 +307,21 @@ app.post('/sign', async (req, res) => {
             httpOnly: true
         });
 
+        // const userDara = await Chandan_user.findById({ _id: req.session.user_id });
+        // res.render('welcome', { user: userDara });
+
         if (email_checking.password === password) {
-            res.status(200).render('index')
+
+            res.status(200).render('welcome')
+
+
+            // ("#hidetoggle").hide();
 
 
         } else {
+
+            req.session.user = email_checking._id;
+
             res.send('please check your password')
         }
 
@@ -244,16 +334,64 @@ app.post('/sign', async (req, res) => {
         console.log(error)
     }
 
-    var login_user = async (firstname, lastname) => {
+})
 
+
+//login at first page
+
+
+
+app.post('/loginatfirst', async (req, res) => {
+    //to the users who already have an account
+
+    try {
+        var email = req.body.email
+        var password = req.body.password
+
+        //checkign the email matched with database or not
+
+        var email_checking = await Chandan_user.findOne({ email: email });
+        //checking password with database
+        var password_checking = await bcrypt.compare(password, email_checking.password);
+
+
+
+        const token = await email_checking.generateAuthToken();
+        console.log("the token part is : " + token);
+
+
+        res.cookie("jwt", token, {
+            expires: new Date(Date.now() + 600000),
+            httpOnly: true
+        });
+
+        if (email_checking.password === password) {
+            // req.session.user_id = email_checking._id;
+            res.status(200).render('secret')
+
+
+        } else {
+
+            res.send('please check your password')
+        }
+
+
+
+
+
+    } catch (error) {
+        res.status(400).send("please check your email and try again")
+        console.log(error)
     }
+
+
 })
 
 
 
-app.get('/login', (req, res) => {
-    res.render('login');
-})
+
+
+
 
 
 //user database and validation for cloud database
@@ -307,10 +445,12 @@ app.post('/login', async (req, res) => {
             var saving_data = await lamborghini.save();
             res.status(200).render('index');
             console.log(lamborghini)
-            login_user(req.body.firstname, req.body.lastname)
-            //sendResetpassword(req.body.firstname, req.body.lastname, req.body.email)
+           
+            //sendResetpassword(req.body.firstname, req.body.lastname, req.body.email) 
+
             if (saving_data) {
                 email_sender(req.body.firstname, req.body.lastname, req.body.email);
+
 
                 // res.send("your email has been sent succesfull")
             }
@@ -326,19 +466,21 @@ app.post('/login', async (req, res) => {
 
     } catch (error) {
         console.log(error)
-        res.render('login_error_page')
+
     }
 })
 
 //forgot password token and sending the email to the user
 app.get('/forgot-password', async (req, res) => {
+    const token = req.query.token;
+    const tokenData = await Chandan_user.findOne({ token: token })
     try {
-        const token = req.query.token;
-        const tokenData = await Chandan_user.findOne({ token: token })
+
         if (tokenData) {
             res.render('forgot-password', { user_id: tokenData._id })
 
         } else {
+
             res.send("<h1>this link has been used</h1>")
         }
 
@@ -396,6 +538,7 @@ app.post('/forgot_password', async (req, res) => {
             sendResetpassword(forgot.firstname, forgot.lastname, forgot.email, randomString)
             const data_form = await Chandan_user.updateOne({ email: email }, { $set: { token: randomString } });
             res.status(200).send("<h1><i>Please Check your Inbox of Mail And Reset Your Password</i></h1>");
+
 
         } else {
             res.status(200).send("<h1><i>this email does not exist</i></h1>")

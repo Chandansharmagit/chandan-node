@@ -30,17 +30,17 @@
             <li><a href="/secret">secret</a></li>
             <li><a href="/log_out">logout</a></li>
             <li><a href="#">Solutions</a></li>
-            <li><a href="#">chandan</a></li>
-             <li><a href="#">Hello {{currentUser.username}}  </a></li>
+
 
 
             <a href="/login">
                 <li><button class="login-button">Login</button></li>
             </a>
-           
+
 
             <a href="/sign">
-                <li><button class="join-button">Already have an account</button></li>
+                <li><button class="join-button" onclick="hidetggle()" id="hidemenu">Already have an account</button>
+                </li>
             </a>
         </ul>
     </nav>
@@ -456,10 +456,27 @@
 
 
     <script>
-        // Dark & Light toggle
+        const hidetoggle = document.getElementById('hidetoggle');
+        function sharma() {
+            if (hidetoggle = 'click') {
+                hidetoggle.style.display = 'none'
+            } else {
+                hidetoggle.style.display = 'block'
+            }
+        }
+        hidetoggle.addEventListener('click', sharma);
 
 
+    </script>
 
+    <script>
+        const hidebutton = document.getElementById("hidemenu");
+        function hidetggle() {
+
+            hidebutton.style.display = "none";
+
+
+        }
     </script>
 
 

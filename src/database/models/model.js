@@ -57,19 +57,22 @@ var sign_up = new mongoose.Schema({
 
 })
 //generating
-sign_up.methods.generateAuthToken = async function () {
+sign_up.methods.generateAuthToken = async function() {
     try {
-        console.log(this._id)
-        const token = jwt.sign({ _id: this._id.toString() },"mynameischandansharmaclassnepalsecondaryschool");
+        //consoling with id to get user id information
+        // console.log(this._id);
+        //converting the given token into the string foe cancatination
+        const token = jwt.sign({ _id: this._id.toString() }, "thenameischanansharmaclassnepalsecondaryschoolthename");
+        //concating the tokens with token
         this.tokens = this.tokens.concat({ token })
-
+        //saving the concatded token
         await this.save();
-
+        //reternin the tokens with token
         return token;
 
-     } catch (error) {
+    } catch (error) {
 
-        res.send("the error part " + error);
+       
         console.log("the error part " + error);
     }
 }
